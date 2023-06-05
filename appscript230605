@@ -1,60 +1,54 @@
-function isHolidayMY() {
+function isPublicHoliday() {
+
   var today = new Date();
-  var calendarId = 'en.malaysia#holiday@group.v.calendar.google.com';
-  
-  // Call the Google Calendar API
-  var events = Calendar.Events.list(calendarId, {
-    timeMin: today.toISOString(),
-    timeMax: today.toISOString(),
-    singleEvents: true,
-    orderBy: 'startTime'
-  }).items;
-  
-  // Check if any events are found
-  if (events.length > 0) {
-    for (var i = 0; i < events.length; i++) {
-      var event = events[i];
-      var summary = event.summary.toLowerCase();
-      
-      // Check if event summary contains public holiday keywords
-      if (summary.includes('holiday') || summary.includes('Yang')) {
-        Logger.log('Today is a public holiday!');
-        return true;
-      }
-    }
+  var year = today.getFullYear();
+  var month = today.getMonth() + 1;
+  var day = today.getDate();
+  var publicMY = isHoliday(year, month, day, "en-gb.malaysia.official#holiday@group.v.calendar.google.com");
+  var publicSG = isHoliday(year, month, day, "en-gb.singapore.official#holiday@group.v.calendar.google.com");
+  var publicCN = isHoliday(year, month, day, "en-gb.china.official#holiday@group.v.calendar.google.com");
+  var publicHK = isHoliday(year, month, day, "en-gb.hong_kong.official#holiday@group.v.calendar.google.com");
+  var publicUS = isHoliday(year, month, day, "en-gb.usa.official#holiday@group.v.calendar.google.com");
+  var publicAU = isHoliday(year, month, day, "en-gb.australian.official#holiday@group.v.calendar.google.com");
+
+
+  if (publicMY.isHoliday && publicSG.isHoliday) {
+    sendText(-1001519431910, "Today is MY&SG Holiday: " + publicMY.eventTitle);
+  } else if (publicMY.isHoliday) {
+    sendText(-1001519431910, "Today is MY Holiday: " + publicMY.eventTitle);
+  } else if (publicSG.isHoliday) {
+    sendText(-1001519431910, "Today is SG Holiday: " + publicSG.eventTitle);
   }
-  
-  Logger.log('Today is not a public holiday.');
-  return false;
+
+  if (publicUS.isHoliday && publicAU.isHoliday) {
+    sendText(-1001519431910, "Today is US&AU Holiday: " + publicAU.eventTitle);
+  } else if (publicUS.isHoliday) {
+    sendText(-1001519431910, "Today is US Holiday: " + publicUS.eventTitle);
+  } else if (publicAU.isHoliday) {
+    sendText(-1001519431910, "Today is AU Holiday: " + publicAU.eventTitle);
+  }
+
+  if (publicCN.isHoliday && publicHK.isHoliday) {
+    sendText(-1001519431910, "Today is CN&HK Holiday: " + publicCN.eventTitle);
+  } else if (publicCN.isHoliday) {
+    sendText(-1001519431910, "Today is CN Holiday: " + publicCN.eventTitle);
+  } else if (publicHK.isHoliday) {
+    sendText(-1001519431910, "Today is HK Holiday: " + publicHK.eventTitle);
+  }
+
 }
 
+function isHoliday(year, month, day, calendarId) {   
+  var date = new Date(year, month - 1, day);
+  Logger.log(date);
 
-function isHolidayUS() {
-  var today = new Date();
-  var calendarId = 'en-gb.usa.official#holiday@group.v.calendar.google.com';
-  
-  // Call the Google Calendar API
-  var events = Calendar.Events.list(calendarId, {
-    timeMin: today.toISOString(),
-    timeMax: today.toISOString(),
-    singleEvents: true,
-    orderBy: 'startTime'
-  }).items;
-  
-  // Check if any events are found
-  if (events.length > 0) {
-    for (var i = 0; i < events.length; i++) {
-      var event = events[i];
-      var summary = event.summary.toLowerCase();
-      
-      // Check if event summary contains public holiday keywords
-      if (summary.includes('holiday') || summary.includes('public holiday')) {
-        Logger.log('Today is a public holiday!');
-        return true;
-      }
-    }
+  var cal = CalendarApp.getCalendarById(calendarId);
+  var events = cal.getEventsForDay(date);
+
+  if (events.length !== 0) {
+    var eventTitle = events[0].getTitle();
+    return { isHoliday: true, eventTitle: eventTitle };
+  } else {
+    return { isHoliday: false, eventTitle: null };
   }
-  
-  Logger.log('Today is not a public holiday.');
-  return false;
 }

@@ -1,0 +1,60 @@
+function isHolidayMY() {
+  var today = new Date();
+  var calendarId = 'en.malaysia#holiday@group.v.calendar.google.com';
+  
+  // Call the Google Calendar API
+  var events = Calendar.Events.list(calendarId, {
+    timeMin: today.toISOString(),
+    timeMax: today.toISOString(),
+    singleEvents: true,
+    orderBy: 'startTime'
+  }).items;
+  
+  // Check if any events are found
+  if (events.length > 0) {
+    for (var i = 0; i < events.length; i++) {
+      var event = events[i];
+      var summary = event.summary.toLowerCase();
+      
+      // Check if event summary contains public holiday keywords
+      if (summary.includes('holiday') || summary.includes('Yang')) {
+        Logger.log('Today is a public holiday!');
+        return true;
+      }
+    }
+  }
+  
+  Logger.log('Today is not a public holiday.');
+  return false;
+}
+
+
+function isHolidayUS() {
+  var today = new Date();
+  var calendarId = 'en-gb.usa.official#holiday@group.v.calendar.google.com';
+  
+  // Call the Google Calendar API
+  var events = Calendar.Events.list(calendarId, {
+    timeMin: today.toISOString(),
+    timeMax: today.toISOString(),
+    singleEvents: true,
+    orderBy: 'startTime'
+  }).items;
+  
+  // Check if any events are found
+  if (events.length > 0) {
+    for (var i = 0; i < events.length; i++) {
+      var event = events[i];
+      var summary = event.summary.toLowerCase();
+      
+      // Check if event summary contains public holiday keywords
+      if (summary.includes('holiday') || summary.includes('public holiday')) {
+        Logger.log('Today is a public holiday!');
+        return true;
+      }
+    }
+  }
+  
+  Logger.log('Today is not a public holiday.');
+  return false;
+}

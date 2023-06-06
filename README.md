@@ -7,7 +7,6 @@ Sample1: https://stackoverflow.com/questions/30833844/get-holidays-list-of-a-cou
 Analysis2: https://chat.openai.com/share/5104087b-71c6-4162-871c-5d01059dd753
 
 WRONG CODE:
-
   var today = new Date();  
   var events = Calendar.Events.list(calendarId, {
     timeMin: today.toISOString(),

@@ -1,0 +1,123 @@
+function init210307(url1location, cord1x, cord1y, cord1l, cord1r) {
+    /*
+           @Scope: main function
+           
+    */    
+    // Source IMG URL
+    // Add logic to read from spreadsheets
+    var source1 = url1location;
+    var crop1x = cord1x;
+    var crop1y = cord1y;
+    var crop1l = cord1l;
+    var crop1r = cord1r;
+    var uri = convert_to_jpg1(source1, crop1x, crop1y, crop1l, crop1r);                // Converted file URL
+    console.log(uri);
+    return uri
+    // SaveToDrive1(uri)                              // Saving it to Google Drive
+}
+
+
+function convert_to_jpg1(image1url, cord1x, cord1y, cord1l, cord1r) {
+    /*
+           @Scope: Function does API request to crop images online
+           @params:
+                -> image1url: string
+           @returns: string <= comma separated final urls
+           @example: convert_to_jpg1('https://cdn.online-convert.com/example-file/raster%20image/jpg/example_small.jpg')
+    */
+    var end_point_uri1 = 'https://api2.online-convert.com/jobs';
+    var token1 = 'MAKEYOUROWNKEY';
+    var request_headers1 = {
+        "Content-Type": "text/plain",
+        "x-oc-api-key": token1,
+    };
+  
+    var request1 = build_request_payload1(image1url, cord1x, cord1y, cord1l, cord1r);
+    var response1 = do_api_call1(method='POST', url=end_point_uri1, headers=request_headers1, data=request);
+    var content_text1 = JSON.parse(response1.getContentText("UTF-8"));
+    var req_id1 = content_text1['id'];
+    var job_url1 = end_point_uri1 + '/' + req_id1
+    var poll_job1, job_status1, status_code1, outputs1, file1;
+    while(true) {
+        poll_job1 = do_api_call1(method='GET', url=job_url1, headers={"x-oc-api-key": token1});
+        job_status1 = JSON.parse(poll_job1.getContentText("UTF-8"));
+        status_code1 = job_status1['status']['code'];
+        if(status_code1 == 'completed') {
+            outputs1 = job_status1['output'];
+            var uri_list1 = new Array();
+            for (var i=0; i < outputs1['length']; i++) {
+                 file1 = outputs1[i];
+                 uri_list1[i] = file1['uri'];
+            }
+            break;
+        };
+    }
+    return uri_list1.join(',');
+}
+
+
+function do_api_call1(method1, url1, headers1, data1=null) {
+    /*
+          Utility method
+          Scope: Making API request
+          @params:
+              -> method: string  # GET/POST/PATCH/UPDATE
+              -> url: string
+              -> headers: JSON
+              -> data: JSON
+    */
+    var requestOptions1 = {
+        'method': method1,
+        'url': url1,
+        'headers': headers1,
+        'redirect': 'follow'
+    };
+    if(data1) {
+        requestOptions['payload'] = JSON.stringify(data1)
+    };
+    return UrlFetchApp.fetch(url1, requestOptions1);
+}
+
+
+function SaveToDrive1(url1, file_name1=null) {
+    /*
+          Utility method
+          Scope: Saving file into Drive
+          @params:
+              -> url: string
+              -> file_name: string
+    */
+    var blob1 = UrlFetchApp.fetch(url1).getBlob();
+    var imgfile1 = DriveApp.createFile(blob1);
+    if (file_name1) { imgfile1.setName(file_name1); };
+}
+
+
+function build_request_payload1(image1url, cord1x, cord1y, cord1l, cord1r) {
+    /*
+          Utility method
+          @params: image1url: string
+          @returns: JSON
+    */
+    // NOTE:: implemented to process single URL
+    // API supports multiple file conversion in one go,
+    // Modify script to process. You can send list of source image URLs and conversion
+    // parameters to generate request payload
+    var request1 = {
+        "input": [{
+            "type": "remote",
+            "source": image1url
+        }],
+        "conversion": [{
+            "category": "image",
+            "target": "jpg",
+            "options": {
+              "crop_top" : cord1x,
+              "crop_bottom" : cord1y,
+              "crop_left" : cord1l,
+              "crop_right" : cord1r
+            }
+        }]
+    };
+    return request1;
+}

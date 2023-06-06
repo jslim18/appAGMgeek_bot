@@ -15,6 +15,7 @@ WRONG CODE:
     singleEvents: true,
     orderBy: 'startTime'
   }).items;
-  var event = events[i];
-  var summary = event.summary.toLowerCase();
-  if (summary.includes('holiday') || summary.includes('public holiday')) { }
+  var event = events[i];  
+  var summary = event.summary.toLowerCase();  
+  if (summary.includes('holiday') || summary.includes('public holiday')) { }  
+  
